@@ -1,4 +1,4 @@
-Distributed Hash Table (DHT) Implementation in Python
+Distributed Hash Table (DHT) Implementation in Python 
 
 This project implements a Distributed Hash Table (DHT) using the Chord protocol with SHA-1 hashing. The DHT can store key-value pairs and distribute them across multiple nodes. It also includes functionality for loading data from different sources (e.g., Pandas DataFrames, SQL databases, and dictionaries).
 
@@ -48,3 +48,4 @@ Dictionary: Provide a Python dictionary where keys represent the data keys and v
    Needing working threading to support conflicts if more than one person is on
    functinality of some sort of online sharing of the table
    
+project for CS2270, brain hurted, learned new stuff and things. C++. What more can i say... 10/10 good course would recommend
