@@ -1,11 +1,8 @@
 import hashlib
-#from itertools import count
-#from re import T
 import threading
 import time
 import pandas as pd
-
-#from sqlalchemy import create_engine
+from sqlalchemy import create_engine
 
 test_data = {
     "user1": "Alice",
@@ -51,8 +48,8 @@ class SQL_CONNECTOR:
     def connect(self):
         if(not self.server or not self.port or not self.USER or not self.PASSWORD or not self.DATABASE):
             raise ValueError('Please provide all the required information for SQL server access')
-        #engine = create_engine(f'mssql+pyodbc://{self.USER}:{self.PASSWORD}@{self.server}:{self.port}/{self.DATABASE}?driver=ODBC+Driver+17+for+SQL+Server')
-        #return engine
+        engine = create_engine(f'mssql+pyodbc://{self.USER}:{self.PASSWORD}@{self.server}:{self.port}/{self.DATABASE}?driver=ODBC+Driver+17+for+SQL+Server')
+        return engine
 
 class DF_LOADER:
     def check_df(self, df):
@@ -103,14 +100,13 @@ class Node:
     #     Node.dht_status["existing_node"] = self
 
     def join(self, existing_node):
-        print("Join method called")
+        #print("Join method called")
         if existing_node:
-            print("Finding successor...")
             self.successor = existing_node.find_successor(self.id)
             self.predecessor = None
             print("Successor found:", self.successor.id)
         else:
-            print("No existing node, setting successor and predecessor to self")
+           
             self.successor = self
             self.predecessor = self
         print("Stabilizing...")
@@ -196,17 +192,6 @@ class Node:
         
             for key_id, value in self.data.items():
                 self.successor.store_data(key_id, value)
-
-    # def leave(self):
-    #     
-    #         # Transfer data to the successor before leaving
-    #         for key_id, value in self.data.items():
-    #             self.successor.store_data(key_id, value)
-    #         # Notify successor and predecessor
-    #         if self.predecessor:
-    #             self.predecessor.successor = self.successor
-    #         if self.successor:
-    #             self.successor.predecessor = self.predecessor
 
         
 
