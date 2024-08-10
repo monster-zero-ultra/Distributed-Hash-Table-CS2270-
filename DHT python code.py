@@ -4,29 +4,13 @@ import time
 import pandas as pd
 from sqlalchemy import create_engine
 
-test_data = {
-    "user1": "Alice",
-    "user2": "Bob",
-    "user3": "Charlie",
-    "user4": "David",
-    "user5": "Eve",
-    "user6": "Frank",
-    "user7": "Grace",
-    "user8": "Hannah",
-    "user9": "Isaac",
-    "user10": "Jack"
-}
-#import pyodbc
+
 
 # server = 'localhost'
 # port = '1433' 
 # USER = '********'
 # PASSWORD = '********'
 # DATABASE = '********'
-
-
-
-# engine = create_engine(f'mssql+pyodbc://{USER}:{PASSWORD}@{server}:{port}/{DATABASE}?driver=ODBC+Driver+17+for+SQL+Server')
 
 
 # table_name = '[NHS PANDAS SQL DATASET]'
@@ -85,19 +69,6 @@ class Node:
         self.finger_table = [self] * M
         self.lock = threading.Lock()
 
-    #
-    # def join(self, existing_node):
-    #     if existing_node:
-    #         self.successor = existing_node.find_successor(self.id)
-    #         self.predecessor = None
-    #     else:
-    #         self.successor = self
-    #         self.predecessor = self
-    #     self.stabilize()
-    #     self.fix_fingers()
-    #     self.replicate_data_to_successor()
-    #     Node.dht_status["is_empty"] = False
-    #     Node.dht_status["existing_node"] = self
 
     def join(self, existing_node):
         #print("Join method called")
@@ -220,6 +191,7 @@ def main():
 ########## Load your data here ##########
     
     Data_to_be_loaded = test_data
+
 ####### delete test_data and replace ####
 ##### for all data types besides sql ####
 
