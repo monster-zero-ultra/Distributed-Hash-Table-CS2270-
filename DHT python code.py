@@ -4,8 +4,6 @@ import time
 import pandas as pd
 from sqlalchemy import create_engine
 
-
-
 # server = 'localhost'
 # port = '1433' 
 # USER = '********'
@@ -68,6 +66,8 @@ class Node:
         self.predecessor = self
         self.finger_table = [self] * M
         self.lock = threading.Lock()
+        
+
 
 
     def join(self, existing_node):
@@ -166,10 +166,23 @@ class Node:
 
         
 
-    def print_data(self):
-        
-            for key, value in self.data.items():
-                print(f"Node {self.id}: {key} => {value}")
+    def print_data(self, node=None):
+        if not node:
+            node = self
+
+        for key, value in self.data.items():
+            print(f"Node {self.id}: {key} => {value}")
+
+
+    def print_node_data(self, node=None):
+        if node is None:
+            node = self  # Default to the current node if no node is provided
+        print(f"Node ID: {node.id}")
+        print(f"Successor: {node.successor.id}")
+        print(f"Predecessor: {node.predecessor.id}")
+        print(f"Finger table: {[finger.id for finger in node.finger_table]}")
+
+
 
 def stabilize_network(node):
     while True:
@@ -246,6 +259,7 @@ def main():
             print(f"Inserting {key}: {value}")
             node.put(key, value)
         node.print_data()
+        node.print_node_data(Node.dht_status['existing_node'])
     else:
         raise ValueError('Please provide a valid data type')
 
