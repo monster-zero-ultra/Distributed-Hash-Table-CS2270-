@@ -5,7 +5,20 @@ import threading
 import time
 import pandas as pd
 
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
+
+test_data = {
+    "user1": "Alice",
+    "user2": "Bob",
+    "user3": "Charlie",
+    "user4": "David",
+    "user5": "Eve",
+    "user6": "Frank",
+    "user7": "Grace",
+    "user8": "Hannah",
+    "user9": "Isaac",
+    "user10": "Jack"
+}
 #import pyodbc
 
 # server = 'localhost'
@@ -38,8 +51,8 @@ class SQL_CONNECTOR:
     def connect(self):
         if(not self.server or not self.port or not self.USER or not self.PASSWORD or not self.DATABASE):
             raise ValueError('Please provide all the required information for SQL server access')
-        engine = create_engine(f'mssql+pyodbc://{self.USER}:{self.PASSWORD}@{self.server}:{self.port}/{self.DATABASE}?driver=ODBC+Driver+17+for+SQL+Server')
-        return engine
+        #engine = create_engine(f'mssql+pyodbc://{self.USER}:{self.PASSWORD}@{self.server}:{self.port}/{self.DATABASE}?driver=ODBC+Driver+17+for+SQL+Server')
+        #return engine
 
 class DF_LOADER:
     def check_df(self, df):
@@ -63,10 +76,10 @@ def sha1_hash(key):
 
 class Node:
     dht_status = {
-        'is empty': True,
-        'existing node' :None
+        'is_empty': True,
+        'existing_node' :None
     }
-
+    # Constructor
     def __init__(self, node_id):
         self.id = node_id
         self.data = {}
@@ -75,25 +88,52 @@ class Node:
         self.finger_table = [self] * M
         self.lock = threading.Lock()
 
+    #
+    # def join(self, existing_node):
+    #     if existing_node:
+    #         self.successor = existing_node.find_successor(self.id)
+    #         self.predecessor = None
+    #     else:
+    #         self.successor = self
+    #         self.predecessor = self
+    #     self.stabilize()
+    #     self.fix_fingers()
+    #     self.replicate_data_to_successor()
+    #     Node.dht_status["is_empty"] = False
+    #     Node.dht_status["existing_node"] = self
 
     def join(self, existing_node):
+        print("Join method called")
         if existing_node:
+            print("Finding successor...")
             self.successor = existing_node.find_successor(self.id)
             self.predecessor = None
+            print("Successor found:", self.successor.id)
         else:
+            print("No existing node, setting successor and predecessor to self")
             self.successor = self
             self.predecessor = self
+        print("Stabilizing...")
         self.stabilize()
+        print("Fixing fingers...")
         self.fix_fingers()
+        print("Replicating data to successor...")
         self.replicate_data_to_successor()
         Node.dht_status["is_empty"] = False
         Node.dht_status["existing_node"] = self
+        print("Join method completed")
 
     def find_successor(self, key_id):
-        if key_id > self.id and key_id <= self.successor.id:
+        # If the DHT has only one node or if this node is the correct successor
+        if self.id == self.successor.id or (key_id > self.id and key_id <= self.successor.id):
             return self.successor
         else:
             node = self.closest_preceding_node(key_id)
+            
+            # Avoid infinite recursion by adding a base case
+            if node.id == self.id:  # If closest preceding node is itself, return self as a fallback
+                return self
+            
             return node.find_successor(key_id)
 
     def closest_preceding_node(self, key_id):
@@ -103,25 +143,25 @@ class Node:
         return self
 
     def stabilize(self):
-        with self.lock:
+        
             x = self.successor.predecessor
             if x and self.id < x.id < self.successor.id:
                 self.successor = x
             self.successor.notify(self)
 
     def notify(self, node):
-        with self.lock:
+        
             if not self.predecessor or (self.predecessor.id < node.id < self.id):
                 self.predecessor = node
 
     def fix_fingers(self):
-        with self.lock:
+        
             for i in range(M):
                 start = (self.id + 2**i) % 2**M
                 self.finger_table[i] = self.find_successor(start)
 
     def check_predecessor(self):
-        with self.lock:
+        
             if self.predecessor and self.predecessor == self:
                 self.predecessor = None
 
@@ -130,6 +170,7 @@ class Node:
         node = self.find_successor(key_id)
         with node.lock:
             node.data[key_id] = value
+            #print(f"Node {node.id}: {key} => {value}")
 
     def get(self, key):
         key_id = sha1_hash(key)
@@ -138,11 +179,11 @@ class Node:
             return node.data.get(key_id, "NOT FOUND")
         
     def store_data(self, key_id, value):
-        with self.lock:
+        
             self.data[key_id] = value
 
     def retrieve_data(self, key_id):
-        with self.lock:
+        
             return self.data.get(key_id, "NOT FOUND")
 
     def replicate_data(self, primary_node, key_id, value):
@@ -152,12 +193,12 @@ class Node:
             node.store_data(key_id, value)
 
     def replicate_data_to_successor(self):
-        with self.lock:
+        
             for key_id, value in self.data.items():
                 self.successor.store_data(key_id, value)
 
     # def leave(self):
-    #     with self.lock:
+    #     
     #         # Transfer data to the successor before leaving
     #         for key_id, value in self.data.items():
     #             self.successor.store_data(key_id, value)
@@ -170,7 +211,7 @@ class Node:
         
 
     def print_data(self):
-        with self.lock:
+        
             for key, value in self.data.items():
                 print(f"Node {self.id}: {key} => {value}")
 
@@ -193,14 +234,15 @@ def main():
 
 ########## Load your data here ##########
     
-    Data_to_be_loaded = input()
-####### delete input() and replace for###
-####### all data types besides sql ######
+    Data_to_be_loaded = test_data
+####### delete test_data and replace ####
+##### for all data types besides sql ####
 
 #########################################
 
 
     data_type = type(Data_to_be_loaded)
+   # print(test_data)
 
     if data_type == pd.DataFrame:
         df = Data_to_be_loaded
@@ -208,6 +250,8 @@ def main():
         if(Node.dht_status['is_empty']):
             node = Node(sha1_hash("initial_node"))
             node.join(None)
+            Node.dht_status['existing_node'] = node
+            Node.dht_status['is_empty'] = False
             df_loader.load_df_into_DHT(df, node)
         else:
             df_loader.load_df_into_DHT(df, Node.dht_status['existing_node'])
@@ -220,11 +264,35 @@ def main():
         query = f'SELECT * FROM [{table_name}]'
         NHS_df = pd.read_sql(query, engine)
         df_loader = DF_LOADER()
-        df_loader.load_df_into_DHT(NHS_df, node)
+        if(Node.dht_status['is_empty']):
+            node = Node(sha1_hash("initial_node"))
+            node.join(None)
+            Node.dht_status['existing_node'] = node
+            Node.dht_status['is_empty'] = False
+            df_loader.load_df_into_DHT(NHS_df, node)
+        else:
+            df_loader.load_df_into_DHT(NHS_df, Node.dht_status['existing_node'])
+
 
     elif data_type == dict:
+        print("Loading dictionary data into DHT...")
+        if Node.dht_status['is_empty']:
+            print("DHT is empty, creating initial node...")
+            node = Node(sha1_hash("initial_node"))
+            node.join(None)
+            Node.dht_status['existing_node'] = node
+            Node.dht_status['is_empty'] = False
+            print("Initial node created")
+        else:
+            node = Node.dht_status['existing_node']
         for key, value in Data_to_be_loaded.items():
+            print(f"Inserting {key}: {value}")
             node.put(key, value)
-
+        node.print_data()
     else:
         raise ValueError('Please provide a valid data type')
+
+    print("Main function completed")
+
+if __name__ == "__main__":
+    main()
